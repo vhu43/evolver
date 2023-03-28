@@ -35,14 +35,17 @@ if __name__ == '__main__':
 
     # Set up data broadcasting
     bloop = asyncio.new_event_loop()
-    last_time = None
+    last_time = 0
     running = False
     while True:
         current_time = time.time()
-        commands_in_queue = evolver_server.get_num_commands() > 0
+        duration = current_time - last_time
 
-        if (last_time is None or current_time - last_time > conf['broadcast_timing'] or commands_in_queue) and not running:
-            if last_time is None or current_time - last_time > conf['broadcast_timing']:
+        commands_in_queue = evolver_server.get_num_commands() > 0
+        time_reached = duration > conf['broadcast_timing']
+
+        if (time_reached or commands_in_queue) and not running:
+            if time_reached:
                 last_time = current_time
             try:
                 running = True
@@ -50,3 +53,5 @@ if __name__ == '__main__':
                 running = False
             except:
                 pass
+        time.sleep(0.1)
+
